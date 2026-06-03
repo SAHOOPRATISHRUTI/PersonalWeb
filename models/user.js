@@ -17,7 +17,7 @@ const userSchema = new mongoose.Schema({
         type:String,
         required:true
     },
-    refresToken:{
+    refreshToken:{
         type:String,
         default:null
     }
