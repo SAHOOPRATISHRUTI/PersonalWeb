@@ -6,6 +6,7 @@ const {
 } = require("../middleware/authmiddleware");
 const activityService = require("./activityService");
 const activityServicActions = require("../constants/activityActions");
+
 const registerUser = async (userData) => {
   const { name, email, password } = userData;
 
@@ -22,49 +23,44 @@ const registerUser = async (userData) => {
     email,
     password: hashedPassword,
   });
-  const activityLog = await activityService.createActivity({
+
+  await activityService.createActivity({
     userId: newUser._id,
     action: activityServicActions.REGISTER,
     module: "AUTH",
     description: `${newUser.email} registered successfully`,
   });
-  activityLog.save();
-  console.log("New user created:", newUser);
+
   return {
     success: true,
     data: newUser,
   };
 };
+
 const loginUser = async (Userdata) => {
   const { email, password } = Userdata;
-  console.log("Login attempt for email:", email);
   const existingUser = await User.findOne({ email });
-  console.log("Existing user:", existingUser);
 
   if (!existingUser) {
     return null;
   }
-
   const isPasswordMatch = await bcrypt.compare(password, existingUser.password);
 
   if (!isPasswordMatch) {
-    return true;
+    return null;
   }
-
   const accessToken = generateAccessToken(existingUser);
   const refreshToken = generateRefreshToken(existingUser);
 
   existingUser.refreshToken = refreshToken;
   await existingUser.save();
 
-  console.log("Creating activity log...");
   await activityService.createActivity({
     userId: existingUser._id,
     action: activityServicActions.LOGIN,
     module: "AUTH",
     description: `${existingUser.email} logged in successfully`,
   });
-  console.log("Activity log created");
 
   return {
     ...existingUser.toObject(),
@@ -73,7 +69,22 @@ const loginUser = async (Userdata) => {
   };
 };
 
+
+const getProfile = async (userId) => {
+  const user = await User.findById(userId);
+
+  if (!user) {
+    return null;
+  }
+
+  return {
+    success: true,
+    data: user,
+  };
+};
+
 module.exports = {
   registerUser,
   loginUser,
+  getProfile
 };

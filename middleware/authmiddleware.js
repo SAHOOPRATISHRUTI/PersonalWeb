@@ -28,9 +28,9 @@ const generateRefreshToken = (user) => {
 };
 
 const verifyAccessToken = (req,res,next)=>{
-    const authHeader = req.headers.authHeader;
+    const Authorization = req.headers.authorization || req.headers.Authorization;
 
-    if(!authHeader){
+    if(!Authorization){
         return Reasponse.failResponse(
             res,
             401,
@@ -38,7 +38,8 @@ const verifyAccessToken = (req,res,next)=>{
             null
         )
     }
-    const token = authHeader.split(" ")[1];
+    const token = Authorization.split(" ")[1];
+    console.log("token==",token);
     try{
         const decode = jwt.verify
     (

@@ -14,17 +14,23 @@ const registerUser = async (req, res) => {
     return Response.SucessResponse(res, 200, message.userCreated, newUser);
   } catch (error) {
     console.log("Error==", error);
-    return Response.errorResponse(res, 500, message.errorCreatingUser, null);
+    return Response.errorResponse(res, 500, error.message, null);
   }
 };
 
 const loginUser = async (req, res) => {
   try {
     const Userdata = req.body;
-console.log("Userdata==", Userdata);
+
+    console.log("Userdata==", Userdata);
+
     const loggedinUser = await registerService.loginUser(Userdata);
 
     console.log("loggedinUser==", loggedinUser);
+
+    if (!loggedinUser) {
+      return Response.failResponse(res, 401, message.invalidCredentials, null);
+    }
 
     return Response.SucessResponse(
       res,
@@ -32,22 +38,37 @@ console.log("Userdata==", Userdata);
       message.userLoggedIn,
       loggedinUser,
     );
-
-    if (!loggedinUser.success) {
-      return Response.failResponse(
-        res,
-        401,
-        loggedinUser.message || message.invalidCredentials,
-        null,
-      );
-    }
   } catch (error) {
     console.log("Error==", error);
 
     return Response.errorResponse(res, 500, message.errorLoggingIn, null);
   }
 };
+
+const getProfile = async(req,res)=>{
+  try{
+    const userId = req.user.userId;
+
+    const user = await registerService.getProfile(userId);
+
+    if (!user) {
+      return Response.failResponse(res, 404, message.userNotFound, null);
+    }
+
+    return Response.SucessResponse(res, 200, message.fetchedProfile, user);
+  } catch (error) {
+    console.log("Error==", error);
+    return Response.errorResponse(res, 500, error.message, null);
+  }
+}
+
+
+
+
+
+
 module.exports = {
   registerUser,
   loginUser,
+  getProfile
 };

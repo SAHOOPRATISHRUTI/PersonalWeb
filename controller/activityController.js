@@ -6,7 +6,7 @@ const getActivities = async (req, res) => {
   try {
     const userId = req.user.userId; 
     const activities = await activityService.getActivityLogs(userId);
-    return Response.SucessResponse(res, 200, message.success, activities);
+    return Response.SucessResponse(res, 200, message.fetchedActivities, activities);
   }
   catch(error){
     console.log("Error==", error);
@@ -14,6 +14,6 @@ const getActivities = async (req, res) => {
   }
 }
 
-modul.exports = {
+module.exports = {
     getActivities
 }

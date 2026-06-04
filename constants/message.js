@@ -7,6 +7,9 @@ const userLoggedIn = "User logged in successfully";
 const unauthorized = "Unauthorized access";
 const invalidToken = "Invalid token";
 const errorFetchingActivities = "Error fetching activities";
+const fetchedActivities = "Activities fetched successfully";
+const userNotFound = "User not found";
+const fetchedProfile = "Profile fetched successfully";
 module.exports = {
     userCreated,
     errorCreatingUser,
@@ -16,5 +19,8 @@ module.exports = {
     userLoggedIn,
     unauthorized,
     invalidToken,
-    errorFetchingActivities
+    errorFetchingActivities,
+    fetchedActivities,
+    userNotFound,
+    fetchedProfile
 }

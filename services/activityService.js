@@ -1,6 +1,6 @@
 const ActivityLog = require("../models/activityLog");
 
-const createActivity = async (userId, action, module, description) => {
+const createActivity = async ({ userId, action, module, description }) => {
   return await ActivityLog.create({
     userId,
     action,
@@ -8,7 +8,6 @@ const createActivity = async (userId, action, module, description) => {
     description,
   });
 };
-
 const getActivityLogs = async (userId) => {
   return await ActivityLog.find({ userId }).sort({ createdAt: -1 });
 };
