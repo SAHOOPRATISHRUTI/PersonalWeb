@@ -37,7 +37,7 @@ const registerUser = async (userData) => {
 };
 const loginUser = async (Userdata) => {
   const { email, password } = Userdata;
-console.log("Login attempt for email:", email);
+  console.log("Login attempt for email:", email);
   const existingUser = await User.findOne({ email });
   console.log("Existing user:", existingUser);
 
