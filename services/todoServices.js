@@ -2,6 +2,7 @@ const todoModel = require("../models/todo");
 const activitylogs = require("../services/activityService");
 const activityServicActions = require("../constants/activityActions");
 const User = require("../models/user");
+const mongoose = require("mongoose");
 
 const createTodo = async (tododata, userId) => {
   if (!userId) {
@@ -25,35 +26,74 @@ const createTodo = async (tododata, userId) => {
     data: todo,
   };
 };
-
 const todoList = async (userId) => {
   console.log("userrrrrrrID=", userId);
   return await todoModel.find({ userId }).sort({ createdAt: -1 });
 };
 
-const updateTodo = async (todoId, userId, updateData) => {
-  console.log(todoId, userId, updateData);
+const todoListDate = async (userId, date) => {
+  const startDate = new Date(date);
+
+  const endDate = new Date(date);
+  endDate.setDate(endDate.getDate() + 1);
   const user = await User.findById(userId);
+  if (!userId) {
+    throw new Error("User not found");
+  }
+
+  return await todoModel
+    .find({
+      userId,
+      isDeleted: false,
+      date: {
+        $gte: startDate,
+        $lt: endDate,
+      },
+    })
+    .sort({ scheduledTime: 1 });
+
+  await activitylogs.createActivity({
+    userId: userId,
+    action: activityServicActions.DATE_TASK,
+    module: "DAILY INFO",
+    description: `${user.name} viewed todo for ${date}`,
+  });
+  // return todoModel;
+};
+
+const updateTodo = async (todoId, userId, updateData) => {
+  const user = await User.findById(userId);
+
+  const updatePayload = {
+    ...updateData,
+    isEdited: true,
+    editedAt: new Date(),
+  };
+
+  // Handle completedAt automatically
+  if (updateData.status === "COMPLETED") {
+    updatePayload.completedAt = new Date();
+  } else if (updateData.status === "PENDING") {
+    updatePayload.completedAt = null;
+  }
+
   const todo = await todoModel.findOneAndUpdate(
     {
       _id: todoId,
       userId,
       isDeleted: false,
     },
-    {
-      ...updateData,
-      isEdited: true,
-      editedAt: new Date(),
-    },
+    updatePayload,
     {
       new: true,
     },
   );
+
   await activitylogs.createActivity({
-    userId: userId,
+    userId,
     action: activityServicActions.UPDATE_TASK,
     module: "TODO",
-    description: `${user.email} update a todo task`,
+    description: `${user.email} updated a todo task`,
   });
 
   return todo;
@@ -85,9 +125,51 @@ const deleteTodo = async (todoId, userId) => {
   return todo;
 };
 
+const todoCountByDate = async (userId) => {
+  if (!userId) {
+    throw new Error("User not found");
+  }
+
+  return await todoModel.aggregate([
+    {
+      $match: {
+        userId: new mongoose.Types.ObjectId(userId),
+        isDeleted: false,
+      },
+    },
+    {
+      $group: {
+        _id: {
+          $dateToString: {
+            format: "%Y-%m-%d",
+            date: "$date",
+          },
+        },
+        count: {
+          $sum: 1,
+        },
+      },
+    },
+    {
+      $project: {
+        _id: 0,
+        date: "$_id",
+        count: 1,
+      },
+    },
+    {
+      $sort: {
+        date: 1,
+      },
+    },
+  ]);
+};
+
 module.exports = {
   createTodo,
-  todoList,
+  todoListDate,
   updateTodo,
   deleteTodo,
+  todoList,
+  todoCountByDate,
 };

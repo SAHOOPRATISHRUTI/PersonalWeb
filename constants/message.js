@@ -18,6 +18,8 @@ const deleteTodo = "Todo deleted sucessfully";
 const DAILYINFO_CREATED_SUCCESSFULLY = "Daily info created successfully";
 const dailyInfoFetcheddatewise =
   "Daily info fetched successfully for the given date";
+const updateDailyInfoSuccess = "Daily info updated successfully";
+const deleteDailyInfoSuccess = "Daily info deleted successfully";
 module.exports = {
   userCreated,
   errorCreatingUser,
@@ -38,4 +40,6 @@ module.exports = {
   deleteTodo,
   DAILYINFO_CREATED_SUCCESSFULLY,
   dailyInfoFetcheddatewise,
+  updateDailyInfoSuccess,
+  deleteDailyInfoSuccess
 };

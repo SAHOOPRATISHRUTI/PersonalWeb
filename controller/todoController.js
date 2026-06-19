@@ -15,12 +15,26 @@ const createTodo = async (req, res) => {
   }
 };
 
+const todoListDate = async (req, res) => {
+  try {
+    const userId = req.user.userId;
+        const { date } = req.query;
+    const data = await todoService.todoListDate(userId,date);
+    console.log("vvvvvvvv", todoList);
+    return response.SucessResponse(res, 200, message.todoFetched, data);
+  } catch (error) {
+    console.log("Errrorrrrrr", error);
+    return response.errorResponse(res, 500, error.message, null);
+  }
+};
+
+
 const todoList = async (req, res) => {
   try {
     const userId = req.user.userId;
-    const todoList = await todoService.todoList(userId);
+    const data = await todoService.todoList(userId);
     console.log("vvvvvvvv", todoList);
-    return response.SucessResponse(res, 200, message.todoFetched, todoList);
+    return response.SucessResponse(res, 200, message.todoFetched, data);
   } catch (error) {
     console.log("Errrorrrrrr", error);
     return response.errorResponse(res, 500, error.message, null);
@@ -62,10 +76,27 @@ const deletetodo = async(req,res)=>{
     return response.errorResponse(res, 500, error.message, null);
   }
 }
+const getTodoCountByDate = async (req, res) => {
+  try {
+    const userId = req.user.userId;
+
+    const result = await todoService.todoCountByDate(userId);
+
+  return response.SucessResponse(res, 200, message.todoFetched, result);
+  } catch (error) {
+    console.log("Errrorrrrrr", error);
+    return response.errorResponse(res, 500, error.message, null);
+  }
+};
+
+
+
 
 module.exports = {
   createTodo,
-  todoList,
+  todoListDate,
   updateTodo,
   deletetodo
+  ,getTodoCountByDate,
+  todoList
 };

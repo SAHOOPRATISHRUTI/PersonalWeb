@@ -34,6 +34,11 @@ const todoSchema = new mongoose.Schema({
     type: Number,
     default: 0,
   },
+  priority: {
+    type: String,
+    enum: ["LOW", "MEDIUM", "HIGH"],
+    default: null,
+  },
   actualValue: {
     type: Number,
     default: 0,
