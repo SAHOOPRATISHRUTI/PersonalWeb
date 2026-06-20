@@ -1,6 +1,6 @@
 
 const mongoose = require("mongoose")
-const dbURL = `${process.env.MONGO_URI}${process.env.MONGO_DB}`
+const dbURL = `${process.env.MONGO_URI}`
 
 console.log("dbURLL==========",dbURL)
 
