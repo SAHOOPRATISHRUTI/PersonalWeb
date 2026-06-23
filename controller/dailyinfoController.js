@@ -72,10 +72,22 @@ const deleteDailyInfo = async(req,res)=>{
     response.errorResponse(res, 500, error.message, null);
 }
 }
+const getAllDailyInfoList = async (req, res) => {
+  try {
+    const userId = req.user.userId;
+    console.log("date==", req.query.date);
+    const data = await dailyinfoservice.getAllDailyInfo(userId);
+    response.SucessResponse(res, 200, message.dailyInfoFetcheddatewise, data);
+  } catch (error) {
+    console.log(error);
+    response.errorResponse(res, 500, error.message, null);
+  }
+};
 
 module.exports = {
   createDailyInfo,
   getDailyInfo,
   updateDailyInfo,
-  deleteDailyInfo
+  deleteDailyInfo,
+  getAllDailyInfoList
 };
