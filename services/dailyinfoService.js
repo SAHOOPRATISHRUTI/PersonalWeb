@@ -143,9 +143,32 @@ const deleteDailyInfo = async (userId, dailyInfoId) => {
   return dailyInfo;
 };
 
+const getAllDailyInfo = async (userId) => {
+  if (!userId) {
+    return (userIdnotFound = true);
+  }
+
+  const user = await User.findById(userId);
+
+  const dailyInfo = await dailyInfoModel.find({
+    userId,
+    isDeleted: false,
+  }).sort({ date: -1 }); // latest first
+
+  await activitylogs.createActivity({
+    userId,
+    action: acticityServicActions.DATE_DAILYINFO,
+    module: "DAILY INFO",
+    description: `${user.name} viewed all daily info`,
+  });
+
+  return dailyInfo;
+};
+
 module.exports = {
   createDailyInfo,
   getDailyInfo,
   updateDailyInfo,
   deleteDailyInfo,
+  getAllDailyInfo
 };

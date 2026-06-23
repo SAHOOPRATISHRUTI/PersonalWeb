@@ -6,5 +6,6 @@ route.post("/create", middleware.verifyAccessToken, dailyInfoController.createDa
 route.get("/", middleware.verifyAccessToken, dailyInfoController.getDailyInfo)
 route.put("/update/:dailyInfoId", middleware.verifyAccessToken, dailyInfoController.updateDailyInfo)
 route.delete("/delete/:dailyInfoId", middleware.verifyAccessToken, dailyInfoController.deleteDailyInfo)
+route.get("/allDailyInfoList", middleware.verifyAccessToken, dailyInfoController.getAllDailyInfoList)
 
 module.exports = route
