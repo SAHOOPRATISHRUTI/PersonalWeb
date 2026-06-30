@@ -20,6 +20,8 @@ const dailyInfoFetcheddatewise =
   "Daily info fetched successfully for the given date";
 const updateDailyInfoSuccess = "Daily info updated successfully";
 const deleteDailyInfoSuccess = "Daily info deleted successfully";
+const delayedTasks = "Delayed tasks checked successfully";
+
 module.exports = {
   userCreated,
   errorCreatingUser,
@@ -41,5 +43,6 @@ module.exports = {
   DAILYINFO_CREATED_SUCCESSFULLY,
   dailyInfoFetcheddatewise,
   updateDailyInfoSuccess,
-  deleteDailyInfoSuccess
+  deleteDailyInfoSuccess,
+  delayedTasks,
 };

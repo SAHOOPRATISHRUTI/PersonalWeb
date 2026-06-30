@@ -82,6 +82,24 @@ const todoSchema = new mongoose.Schema({
     type: Date,
     default: null,
   },
+  notificationSent: {
+    type: Boolean,
+    default: false,
+  },
+
+  isDelayed: {
+    type: Boolean,
+    default: false,
+  },
+
+  delayReasonSubmittedAt: {
+    type: Date,
+    default: null,
+  },
+  completionPercentage: {
+    type: Number,
+    default: 0,
+  },
 });
 
 module.exports = mongoose.model("Todo", todoSchema);
