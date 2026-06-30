@@ -75,9 +75,19 @@ const deleteDailyInfo = async(req,res)=>{
 const getAllDailyInfoList = async (req, res) => {
   try {
     const userId = req.user.userId;
-    console.log("date==", req.query.date);
+
+    console.log("userId =", userId);
+
     const data = await dailyinfoservice.getAllDailyInfo(userId);
-    response.SucessResponse(res, 200, message.dailyInfoFetcheddatewise, data);
+
+    console.log("data =", data);
+
+    response.SucessResponse(
+      res,
+      200,
+      message.dailyInfoFetcheddatewise,
+      data
+    );
   } catch (error) {
     console.log(error);
     response.errorResponse(res, 500, error.message, null);

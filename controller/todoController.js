@@ -5,6 +5,7 @@ const message = require("../constants/message");
 const createTodo = async (req, res) => {
   try {
     const todoData = req.body;
+    console.log("todoData,tod",todoData)
     const userId = req.user.userId;
 
     const newTodo = await todoService.createTodo(todoData, userId);
