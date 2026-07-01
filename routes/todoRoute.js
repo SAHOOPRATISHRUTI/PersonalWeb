@@ -16,4 +16,10 @@ route.get(
   todoCronController.checkDelayedTasks
 );
 
+route.get(
+  "/dashboard",
+   middleware.verifyAccessToken,
+  todoController.getDashboard
+);
+
 module.exports = route;
