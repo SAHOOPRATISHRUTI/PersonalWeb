@@ -1,7 +1,9 @@
 const nodemailer = require("nodemailer");
 
 const transporter = nodemailer.createTransport({
-  service: "gmail",
+  host: "smtp.gmail.com",
+  port: 587,
+  secure: false,
   auth: {
     user: "pratishrutisahoo7@gmail.com",
     pass: "fkiywqearkqqgfmz",
@@ -10,6 +12,7 @@ const transporter = nodemailer.createTransport({
 
 (async () => {
   try {
+    console.log("Before verify");
     await transporter.verify();
     console.log("SMTP Connected");
   } catch (err) {

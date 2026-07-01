@@ -4,27 +4,65 @@ const activityServicActions = require("../constants/activityActions");
 const User = require("../models/user");
 const mongoose = require("mongoose");
 
+// const createTodo = async (tododata, userId) => {
+//   if (!userId) {
+//     return (userIdnotfound = true);
+//   }
+//   const todo = await todoModel.create({
+//     ...tododata,
+//     userId,
+//   });
+//   const user = await User.findById(userId);
+//   console.log("User Data Found ===", user);
+
+//   await activitylogs.createActivity({
+//     userId: userId,
+//     action: activityServicActions.CREATE_TASK,
+//     module: "TODO",
+//     description: `${user.email} created a todo task`,
+//   });
+
+//   return {
+//     data: todo,
+//   };
+// };
 const createTodo = async (tododata, userId) => {
   if (!userId) {
-    return (userIdnotfound = true);
+    throw new Error("User not found");
   }
+
+  const taskDateTime = new Date(tododata.date);
+
+  if (tododata.scheduledTime) {
+    const [hours, minutes] = tododata.scheduledTime.split(":").map(Number);
+
+    taskDateTime.setHours(hours);
+    taskDateTime.setMinutes(minutes);
+    taskDateTime.setSeconds(0);
+    taskDateTime.setMilliseconds(0);
+  }
+
+  const now = new Date();
+
+  const isDelayed = taskDateTime <= now;
+
   const todo = await todoModel.create({
     ...tododata,
     userId,
+    isDelayed,
+    notificationSent: isDelayed, // optional
   });
+
   const user = await User.findById(userId);
-  console.log("User Data Found ===", user);
 
   await activitylogs.createActivity({
-    userId: userId,
+    userId,
     action: activityServicActions.CREATE_TASK,
     module: "TODO",
     description: `${user.email} created a todo task`,
   });
 
-  return {
-    data: todo,
-  };
+  return todo;
 };
 const todoList = async (userId) => {
   console.log("userrrrrrrID=", userId);
@@ -61,8 +99,108 @@ const todoListDate = async (userId, date) => {
   // return todoModel;
 };
 
+// const updateTodo = async (todoId, userId, updateData) => {
+//   const user = await User.findById(userId);
+
+//   const updatePayload = {
+//     ...updateData,
+//     isEdited: true,
+//     editedAt: new Date(),
+//   };
+
+//   // Handle completedAt automatically
+//   if (updateData.status === "COMPLETED") {
+//     updatePayload.completedAt = new Date();
+//   } else if (updateData.status === "PENDING") {
+//     updatePayload.completedAt = null;
+//   }
+
+//   const todo = await todoModel.findOneAndUpdate(
+//     {
+//       _id: todoId,
+//       userId,
+//       isDeleted: false,
+//     },
+//     updatePayload,
+//     {
+//       new: true,
+//     },
+//   );
+
+//   await activitylogs.createActivity({
+//     userId,
+//     action: activityServicActions.UPDATE_TASK,
+//     module: "TODO",
+//     description: `${user.email} updated a todo task`,
+//   });
+
+//   return todo;
+// };
+// const updateTodo = async (todoId, userId, updateData) => {
+//   const user = await User.findById(userId);
+
+//   const updatePayload = {
+//     ...updateData,
+//     isEdited: true,
+//     editedAt: new Date(),
+//   };
+
+//   // Handle completed status
+//   if (updateData.status === "COMPLETED") {
+//     updatePayload.completedAt = new Date();
+//   } else if (updateData.status === "PENDING") {
+//     updatePayload.completedAt = null;
+//   }
+
+//   // Handle delay reason
+//   if (updateData.delayReason && updateData.delayReason.trim() !== "") {
+//     const reason = updateData.delayReason.trim();
+
+//     updatePayload.delayReason = reason;
+
+//     // 🟢 ADD THIS (important)
+//     updatePayload.delayReasonSubmittedAt = new Date();
+
+//     // Reset delayed flags after reason is provided
+//     updatePayload.isDelayed = false;
+//     updatePayload.notificationSent = false;
+//   }
+
+//   const todo = await todoModel.findOneAndUpdate(
+//     {
+//       _id: todoId,
+//       userId,
+//       isDeleted: false,
+//     },
+//     updatePayload,
+//     {
+//       new: true,
+//     },
+//   );
+
+//   await activitylogs.createActivity({
+//     userId,
+//     action: activityServicActions.UPDATE_TASK,
+//     module: "TODO",
+//     description: `${user.email} updated a todo task`,
+//   });
+
+//   return todo;
+// };
+
 const updateTodo = async (todoId, userId, updateData) => {
   const user = await User.findById(userId);
+
+  // Get existing todo
+  const existingTodo = await todoModel.findOne({
+    _id: todoId,
+    userId,
+    isDeleted: false,
+  });
+
+  if (!existingTodo) {
+    throw new Error("Todo not found");
+  }
 
   const updatePayload = {
     ...updateData,
@@ -70,11 +208,23 @@ const updateTodo = async (todoId, userId, updateData) => {
     editedAt: new Date(),
   };
 
-  // Handle completedAt automatically
+  // Handle completed status
   if (updateData.status === "COMPLETED") {
     updatePayload.completedAt = new Date();
   } else if (updateData.status === "PENDING") {
     updatePayload.completedAt = null;
+  }
+
+  // Handle delay reason
+  if (updateData.delayReason?.trim()) {
+    updatePayload.delayReason = updateData.delayReason.trim();
+    updatePayload.isDelayed = true;
+    updatePayload.notificationSent = true;
+
+    // Set only once
+    if (!existingTodo.delayReasonSubmittedAt) {
+      updatePayload.delayReasonSubmittedAt = new Date();
+    }
   }
 
   const todo = await todoModel.findOneAndUpdate(

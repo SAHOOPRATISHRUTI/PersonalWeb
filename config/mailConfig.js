@@ -3,11 +3,18 @@ const nodemailer = require("nodemailer");
 const transporter = nodemailer.createTransport({
   host: "smtp.gmail.com",
   port: 587,
-  secure: true,
+  secure: false,
   auth: {
-    user: process.env.EMAIL_USER, 
+    user: process.env.EMAIL_USER,
     pass: process.env.EMAIL_PASS,
   },
 });
 
-module.exports = transporter;
+(async () => {
+  try {
+    await transporter.verify();
+    console.log("SMTP Connected");
+  } catch (err) {
+    console.log(err);
+  }
+})();
