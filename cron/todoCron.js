@@ -3,7 +3,7 @@ const { checkDelayedTasks } = require("../services/todoReminderService");
 
 // Runs every 5 minutes
 const startTodoCron = () => {
-  cron.schedule("*/2 * * * *", async () => {
+  cron.schedule("*/30 * * * *", async () => {
     console.log("=================================");
     console.log("Running Delayed Task Cron...");
     console.log(new Date());

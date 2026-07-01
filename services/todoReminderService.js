@@ -89,7 +89,7 @@ const checkDelayedTasks = async () => {
           console.log("email", user.email);
           console.log("title", todo.title);
           console.log("scheduledTime", todo.scheduledTime);
-    
+
           await emailService.sendDelayTaskEmail(
             user.email,
             todo.title,
@@ -99,6 +99,13 @@ const checkDelayedTasks = async () => {
           console.log("✅ Email Sent to:", user.email);
         } catch (err) {
           console.log("❌ Email Error:", err.message);
+          console.log({
+            code: err.code,
+            command: err.command,
+            response: err.response,
+            responseCode: err.responseCode,
+            message: err.message,
+          });
         }
       }
 
