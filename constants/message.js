@@ -21,6 +21,7 @@ const dailyInfoFetcheddatewise =
 const updateDailyInfoSuccess = "Daily info updated successfully";
 const deleteDailyInfoSuccess = "Daily info deleted successfully";
 const delayedTasks = "Delayed tasks checked successfully";
+const dashboardFetched = "Dashboard fetched successfully";
 
 module.exports = {
   userCreated,
@@ -45,4 +46,5 @@ module.exports = {
   updateDailyInfoSuccess,
   deleteDailyInfoSuccess,
   delayedTasks,
+  dashboardFetched,
 };

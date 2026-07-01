@@ -4,28 +4,7 @@ const activityServicActions = require("../constants/activityActions");
 const User = require("../models/user");
 const mongoose = require("mongoose");
 
-// const createTodo = async (tododata, userId) => {
-//   if (!userId) {
-//     return (userIdnotfound = true);
-//   }
-//   const todo = await todoModel.create({
-//     ...tododata,
-//     userId,
-//   });
-//   const user = await User.findById(userId);
-//   console.log("User Data Found ===", user);
 
-//   await activitylogs.createActivity({
-//     userId: userId,
-//     action: activityServicActions.CREATE_TASK,
-//     module: "TODO",
-//     description: `${user.email} created a todo task`,
-//   });
-
-//   return {
-//     data: todo,
-//   };
-// };
 const createTodo = async (tododata, userId) => {
   if (!userId) {
     throw new Error("User not found");
@@ -315,6 +294,98 @@ const todoCountByDate = async (userId) => {
   ]);
 };
 
+
+const getDashboard = async (userId) => {
+  const query = {
+    userId,
+    isDeleted: false,
+  };
+
+  const totalTasks = await todoModel.countDocuments(query);
+
+  const completedTasks = await todoModel.countDocuments({
+    ...query,
+    status: "COMPLETED",
+  });
+
+  const pendingTasks = await todoModel.countDocuments({
+    ...query,
+    status: "PENDING",
+  });
+
+  const delayedTasks = await todoModel.countDocuments({
+    ...query,
+    isDelayed: true,
+  });
+
+  const completionRate =
+    totalTasks > 0
+      ? Math.round((completedTasks / totalTasks) * 100)
+      : 0;
+
+  return {
+    totalTasks,
+    completedTasks,
+    pendingTasks,
+    delayedTasks,
+    completionRate,
+  };
+};
+
+
+// const todoListDate = async (userId, date, page, limit) => {
+//   if (!userId) {
+//     throw new Error("User not found");
+//   }
+
+//   const startDate = new Date(date);
+
+//   const endDate = new Date(date);
+//   endDate.setDate(endDate.getDate() + 1);
+
+//   const query = {
+//     userId,
+//     isDeleted: false,
+//     date: {
+//       $gte: startDate,
+//       $lt: endDate,
+//     },
+//   };
+
+//   const skip = (page - 1) * limit;
+
+//   const totalRecords = await todoModel.countDocuments(query);
+
+//   const todos = await todoModel
+//     .find(query)
+//     .sort({ scheduledTime: 1 })
+//     .skip(skip)
+//     .limit(limit);
+
+//   const user = await User.findById(userId);
+
+//   await activitylogs.createActivity({
+//     userId,
+//     action: activityServicActions.DATE_TASK,
+//     module: "DAILY INFO",
+//     description: `${user.name} viewed todo for ${date}`,
+//   });
+
+//   return {
+//     todos,
+//     pagination: {
+//       page,
+//       limit,
+//       totalRecords,
+//       totalPages: Math.ceil(totalRecords / limit),
+//       hasNextPage: page * limit < totalRecords,
+//       hasPreviousPage: page > 1,
+//     },
+//   };
+// };
+
+
+
 module.exports = {
   createTodo,
   todoListDate,
@@ -322,4 +393,5 @@ module.exports = {
   deleteTodo,
   todoList,
   todoCountByDate,
+  getDashboard
 };
