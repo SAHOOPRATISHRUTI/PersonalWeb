@@ -80,7 +80,10 @@ const checkDelayedTasks = async () => {
 
     if (isDelayed && !todo.notificationSent) {
       console.log("Delayed Task Found");
-
+      console.log({
+        isDelayed,
+        notificationSent: todo.notificationSent,
+      });
       const user = await User.findById(todo.userId);
 
       // Send Email
