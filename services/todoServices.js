@@ -4,7 +4,6 @@ const activityServicActions = require("../constants/activityActions");
 const User = require("../models/user");
 const mongoose = require("mongoose");
 
-
 const createTodo = async (tododata, userId) => {
   if (!userId) {
     throw new Error("User not found");
@@ -30,6 +29,7 @@ const createTodo = async (tododata, userId) => {
     userId,
     isDelayed,
     notificationSent: isDelayed, // optional
+     isAutoAddEveryday: tododata.isAutoAddEveryday || false,
   });
 
   const user = await User.findById(userId);
@@ -294,12 +294,22 @@ const todoCountByDate = async (userId) => {
   ]);
 };
 
+const getDashboard = async (userId, date) => {
+  const startDate = new Date(date);
 
-const getDashboard = async (userId) => {
+  const endDate = new Date(date);
+  endDate.setDate(endDate.getDate() + 1);
+
   const query = {
     userId,
     isDeleted: false,
+    date: {
+      $gte: startDate,
+      $lt: endDate,
+    },
   };
+
+  console.log("Dashboard Query =", query);
 
   const totalTasks = await todoModel.countDocuments(query);
 
@@ -319,9 +329,7 @@ const getDashboard = async (userId) => {
   });
 
   const completionRate =
-    totalTasks > 0
-      ? Math.round((completedTasks / totalTasks) * 100)
-      : 0;
+    totalTasks > 0 ? Math.round((completedTasks / totalTasks) * 100) : 0;
 
   return {
     totalTasks,
@@ -331,7 +339,6 @@ const getDashboard = async (userId) => {
     completionRate,
   };
 };
-
 
 // const todoListDate = async (userId, date, page, limit) => {
 //   if (!userId) {
@@ -384,8 +391,6 @@ const getDashboard = async (userId) => {
 //   };
 // };
 
-
-
 module.exports = {
   createTodo,
   todoListDate,
@@ -393,5 +398,5 @@ module.exports = {
   deleteTodo,
   todoList,
   todoCountByDate,
-  getDashboard
+  getDashboard,
 };
