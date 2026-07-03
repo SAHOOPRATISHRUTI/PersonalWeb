@@ -4,7 +4,7 @@ require("dotenv").config();
 const app = require("./app");
 const connectDB = require("./config/dbConnection");
 const PORT = process.env.PORT || 8000;
-const startTodoCron = require("./cron/todoCron");
+const { startAutoTodoCron, startDelayedTaskCron } = require("./cron/todoCron");
 connectDB();
 
 app.get("/", (req, res) => {
@@ -13,5 +13,6 @@ app.get("/", (req, res) => {
 
 app.listen(PORT, () => {
   console.log(`server running on port ${PORT}`);
-  startTodoCron();
+  startAutoTodoCron();
+  startDelayedTaskCron();
 });

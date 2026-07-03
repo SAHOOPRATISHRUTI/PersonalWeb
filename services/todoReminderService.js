@@ -134,22 +134,24 @@ const checkDelayedTasks = async () => {
   return delayedTasks;
 };
 const autoCreateDailyTodos = async () => {
-  const today = new Date();
+  console.log("========== AUTO TODO STARTED ==========");
 
+  // Today's date (00:00)
+  const today = new Date();
   today.setHours(0, 0, 0, 0);
 
   // Yesterday
   const yesterday = new Date(today);
-
   yesterday.setDate(today.getDate() - 1);
 
   const yesterdayStart = new Date(yesterday);
-
   yesterdayStart.setHours(0, 0, 0, 0);
 
   const yesterdayEnd = new Date(yesterday);
-
   yesterdayEnd.setHours(23, 59, 59, 999);
+
+  console.log("Today:", today);
+  console.log("Yesterday:", yesterdayStart);
 
   const todos = await Todo.find({
     isAutoAddEveryday: true,
@@ -159,35 +161,50 @@ const autoCreateDailyTodos = async () => {
       $lte: yesterdayEnd,
     },
   });
-  console.log("todostodostodos", todos);
+
+  console.log("Todos Found:", todos.length);
+
   for (const todo of todos) {
+    console.log("Checking:", todo.title);
+
     // Prevent duplicate creation
     const alreadyExists = await Todo.findOne({
       userId: todo.userId,
       title: todo.title,
-      date: today,
+      date: {
+        $gte: today,
+        $lt: new Date(today.getTime() + 24 * 60 * 60 * 1000),
+      },
       isDeleted: false,
     });
 
-    if (alreadyExists) continue;
+    if (alreadyExists) {
+      console.log(`Already Exists -> ${todo.title}`);
+      continue;
+    }
 
     await Todo.create({
       userId: todo.userId,
+
       title: todo.title,
       description: todo.description,
+
+      date: today,
+
       scheduledTime: todo.scheduledTime,
+
       taskType: todo.taskType,
       targetvalue: todo.targetvalue,
       unit: todo.unit,
       priority: todo.priority,
 
-      date: tomorrow,
-
       actualValue: 0,
       status: "PENDING",
       completedAt: null,
+
       delayReason: null,
       delayReasonSubmittedAt: null,
+
       remarks: "",
 
       isEdited: false,
@@ -203,92 +220,12 @@ const autoCreateDailyTodos = async () => {
 
       isAutoAddEveryday: true,
     });
+
+    console.log(`Created -> ${todo.title}`);
   }
+
+  console.log("========== AUTO TODO COMPLETED ==========");
 };
-// const autoCreateDailyTodos = async () => {
-//   const now = new Date();
-
-//   const todos = await Todo.find({
-//     isAutoAddEveryday: true,
-//     isDeleted: false,
-//   });
-
-//   console.log("Recurring Todos =", todos);
-
-//   for (const todo of todos) {
-//     const alreadyExists = await Todo.findOne({
-//       userId: todo.userId,
-//       title: todo.title,
-//       date: {
-//         $gte: new Date(
-//           now.getFullYear(),
-//           now.getMonth(),
-//           now.getDate(),
-//           0,
-//           0,
-//           0,
-//         ),
-//         $lt: new Date(
-//           now.getFullYear(),
-//           now.getMonth(),
-//           now.getDate(),
-//           23,
-//           59,
-//           59,
-//           999,
-//         ),
-//       },
-//       isDeleted: false,
-//     });
-
-//     if (alreadyExists) {
-//       console.log("Already Exists:", todo.title);
-//       continue;
-//     }
-
-//     const autoCreated = await Todo.create({
-//       userId: todo.userId,
-
-//       title: todo.title,
-//       description: todo.description,
-
-//       date: new Date(), // Current date & time
-
-//       scheduledTime: todo.scheduledTime,
-
-//       taskType: todo.taskType,
-//       targetvalue: todo.targetvalue,
-//       unit: todo.unit,
-//       priority: todo.priority,
-
-//       actualValue: 0,
-//       status: "PENDING",
-
-//       completedAt: null,
-//       delayReason: null,
-//       delayReasonSubmittedAt: null,
-
-//       remarks: "",
-
-//       isEdited: false,
-//       editedAt: null,
-
-//       isDeleted: false,
-//       deletedAt: null,
-
-//       notificationSent: false,
-//       isDelayed: false,
-
-//       completionPercentage: 0,
-
-//       isAutoAddEveryday: true,
-//     });
-
-//     console.log("Auto Created =", autoCreated.title);
-//   }
-
-//   console.log("✅ Auto Daily Todo Completed");
-// };
 
 module.exports = {
   checkDelayedTasks,

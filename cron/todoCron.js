@@ -1,51 +1,111 @@
+// const cron = require("node-cron");
+// const { checkDelayedTasks } = require("../services/todoReminderService");
+// const { autoCreateDailyTodos } = require("../services/todoReminderService");
+
+// const startTodoCron = () => {
+//   // ===============================
+//   // Delayed Task Reminder (Every 30 mins)
+//   // ===============================
+//   cron.schedule("*/30 * * * *", async () => {
+//     console.log("=================================");
+//     console.log("Running Delayed Task Cron...");
+//     console.log(new Date());
+
+//     try {
+//       const delayedTasks = await checkDelayedTasks();
+
+//       console.log(
+//         `Delayed Task Cron Completed. Tasks Found: ${delayedTasks.length}`,
+//       );
+//     } catch (error) {
+//       console.error("Delayed Task Cron Error:", error.message);
+//     }
+
+//     console.log("=================================");
+//   });
+
+//   console.log("✅ Delayed Task Cron Started (Every 30 Minutes)");
+
+//   // ===============================
+//   // Auto Create Daily Todo (12:00 AM)
+//   // ===============================
+//   cron.schedule("0 0 * * *", async () => {
+//     console.log("=================================");
+//     console.log("Running Auto Daily Todo Cron...");
+//     console.log(new Date());
+
+//     try {
+//       await autoCreateDailyTodos();
+
+//       console.log("✅ Auto Daily Todo Completed");
+//     } catch (error) {
+//       console.error("Auto Daily Todo Cron Error:", error.message);
+//     }
+
+//     console.log("=================================");
+//   });
+
+//   console.log("✅ Auto Daily Todo Cron Started (Every Midnight)");
+// };
+
+// module.exports = startTodoCron;
+
 const cron = require("node-cron");
 const { checkDelayedTasks } = require("../services/todoReminderService");
 const { autoCreateDailyTodos } = require("../services/todoReminderService");
 
-const startTodoCron = () => {
-  // ===============================
-  // Delayed Task Reminder (Every 30 mins)
-  // ===============================
-  cron.schedule("*/30 * * * *", async () => {
-    console.log("=================================");
-    console.log("Running Delayed Task Cron...");
-    console.log(new Date());
+const startDelayedTaskCron = () => {
+  cron.schedule(
+    "*/30 * * * *",
+    async () => {
+      console.log("=================================");
+      console.log("Running Delayed Task Cron...");
+      console.log(new Date());
 
-    try {
-      const delayedTasks = await checkDelayedTasks();
+      try {
+        const delayedTasks = await checkDelayedTasks();
 
-      console.log(
-        `Delayed Task Cron Completed. Tasks Found: ${delayedTasks.length}`,
-      );
-    } catch (error) {
-      console.error("Delayed Task Cron Error:", error.message);
-    }
+        console.log(
+          `Delayed Task Cron Completed. Tasks Found: ${delayedTasks.length}`,
+        );
+      } catch (error) {
+        console.error("Delayed Task Cron Error:", error.message);
+      }
 
-    console.log("=================================");
-  });
+      console.log("=================================");
+    },
+    {
+      timezone: "Asia/Kolkata",
+    },
+  );
 
-  console.log("✅ Delayed Task Cron Started (Every 30 Minutes)");
-
-  // ===============================
-  // Auto Create Daily Todo (12:00 AM)
-  // ===============================
-  cron.schedule("0 0 * * *", async () => {
-    console.log("=================================");
-    console.log("Running Auto Daily Todo Cron...");
-    console.log(new Date());
-
-    try {
-      await autoCreateDailyTodos();
-
-      console.log("✅ Auto Daily Todo Completed");
-    } catch (error) {
-      console.error("Auto Daily Todo Cron Error:", error.message);
-    }
-
-    console.log("=================================");
-  });
-
-  console.log("✅ Auto Daily Todo Cron Started (Every Midnight)");
+  console.log("✅ Delayed Task Cron Started");
 };
 
-module.exports = startTodoCron;
+const startAutoTodoCron = () => {
+  cron.schedule(
+    "0 0 * * *",
+    async () => {
+      console.log("=================================");
+      console.log("Running Auto Daily Todo Cron...");
+      console.log(new Date());
+
+      try {
+        await autoCreateDailyTodos();
+
+        console.log("✅ Auto Daily Todo Completed");
+      } catch (error) {
+        console.error("Auto Daily Todo Cron Error:", error.message);
+      }
+
+      console.log("=================================");
+    },
+    {
+      timezone: "Asia/Kolkata",
+    },
+  );
+
+  console.log("✅ Auto Daily Todo Cron Started (12:00 AM IST)");
+};
+
+module.exports = { startDelayedTaskCron, startAutoTodoCron };
