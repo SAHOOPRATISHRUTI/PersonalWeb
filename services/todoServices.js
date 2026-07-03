@@ -9,27 +9,42 @@ const createTodo = async (tododata, userId) => {
     throw new Error("User not found");
   }
 
-  const taskDateTime = new Date(tododata.date);
+  let isDelayed = false;
+  let notificationSent = false;
 
-  if (tododata.scheduledTime) {
+  if (tododata.date && tododata.scheduledTime) {
+    const taskDate = new Date(tododata.date);
+
     const [hours, minutes] = tododata.scheduledTime.split(":").map(Number);
 
-    taskDateTime.setHours(hours);
-    taskDateTime.setMinutes(minutes);
-    taskDateTime.setSeconds(0);
-    taskDateTime.setMilliseconds(0);
+    taskDate.setHours(hours, minutes, 0, 0);
+
+    const now = new Date();
+
+    if (taskDate <= now) {
+      isDelayed = true;
+      notificationSent = true;
+    }
   }
-
-  const now = new Date();
-
-  const isDelayed = taskDateTime <= now;
 
   const todo = await todoModel.create({
     ...tododata,
+
     userId,
+
+    status: "PENDING",
+
     isDelayed,
-    notificationSent: isDelayed, // optional
-     isAutoAddEveryday: tododata.isAutoAddEveryday || false,
+    notificationSent,
+
+    completedAt: null,
+    delayReason: "",
+    delayReasonSubmittedAt: null,
+
+    actualValue: tododata.actualValue || 0,
+    completionPercentage: 0,
+
+    isAutoAddEveryday: tododata.isAutoAddEveryday || false,
   });
 
   const user = await User.findById(userId);
@@ -170,7 +185,6 @@ const todoListDate = async (userId, date) => {
 const updateTodo = async (todoId, userId, updateData) => {
   const user = await User.findById(userId);
 
-  // Get existing todo
   const existingTodo = await todoModel.findOne({
     _id: todoId,
     userId,
@@ -185,22 +199,62 @@ const updateTodo = async (todoId, userId, updateData) => {
     ...updateData,
     isEdited: true,
     editedAt: new Date(),
+
+    isAutoAddEveryday:
+      updateData.isAutoAddEveryday !== undefined
+        ? updateData.isAutoAddEveryday
+        : existingTodo.isAutoAddEveryday,
   };
 
-  // Handle completed status
+  // ===========================
+  // If Date or Time Changed
+  // ===========================
+  if (updateData.date || updateData.scheduledTime) {
+    const taskDate = new Date(updateData.date || existingTodo.date);
+
+    const scheduledTime =
+      updateData.scheduledTime || existingTodo.scheduledTime;
+
+    if (scheduledTime) {
+      const [hours, minutes] = scheduledTime.split(":").map(Number);
+
+      taskDate.setHours(hours);
+      taskDate.setMinutes(minutes);
+      taskDate.setSeconds(0);
+      taskDate.setMilliseconds(0);
+    }
+
+    const now = new Date();
+
+    const isDelayed = taskDate <= now;
+
+    updatePayload.isDelayed = isDelayed;
+    updatePayload.notificationSent = isDelayed;
+
+    // Reset delay reason only if task is no longer delayed
+    if (!isDelayed) {
+      updatePayload.delayReason = "";
+      updatePayload.delayReasonSubmittedAt = null;
+    }
+  }
+
+  // ===========================
+  // Completed Status
+  // ===========================
   if (updateData.status === "COMPLETED") {
     updatePayload.completedAt = new Date();
   } else if (updateData.status === "PENDING") {
     updatePayload.completedAt = null;
   }
 
-  // Handle delay reason
+  // ===========================
+  // Delay Reason
+  // ===========================
   if (updateData.delayReason?.trim()) {
     updatePayload.delayReason = updateData.delayReason.trim();
     updatePayload.isDelayed = true;
     updatePayload.notificationSent = true;
 
-    // Set only once
     if (!existingTodo.delayReasonSubmittedAt) {
       updatePayload.delayReasonSubmittedAt = new Date();
     }
@@ -215,7 +269,7 @@ const updateTodo = async (todoId, userId, updateData) => {
     updatePayload,
     {
       new: true,
-    },
+    }
   );
 
   await activitylogs.createActivity({
