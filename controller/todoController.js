@@ -16,46 +16,11 @@ const createTodo = async (req, res) => {
   }
 };
 
-const todoListDate = async (req, res) => {
-  try {
-    const userId = req.user.userId;
-
-    const { date, page = 1, limit = 6 } = req.query;
-
-    const data = await todoService.todoListDate(
-      userId,
-      date,
-      Number(page),
-      Number(limit),
-    );
-
-    return response.SucessResponse(
-      res,
-      200,
-      message.todoFetched,
-      data,
-    );
-  } catch (error) {
-    console.log("Error =", error);
-
-    return response.errorResponse(
-      res,
-      500,
-      error.message,
-      null,
-    );
-  }
-};
-
 // const todoListDate = async (req, res) => {
 //   try {
 //     const userId = req.user.userId;
 
-//     const {
-//       date,
-//       page = 1,
-//       limit = 10, // default if frontend doesn't send
-//     } = req.query;
+//     const { date, page = 1, limit = 6 } = req.query;
 
 //     const data = await todoService.todoListDate(
 //       userId,
@@ -81,6 +46,41 @@ const todoListDate = async (req, res) => {
 //     );
 //   }
 // };
+
+const todoListDate = async (req, res) => {
+  try {
+    const userId = req.user.userId;
+
+    const {
+      date,
+      page = 1,
+      limit = 10, // default if frontend doesn't send
+    } = req.query;
+
+    const data = await todoService.todoListDate(
+      userId,
+      date,
+      Number(page),
+      Number(limit),
+    );
+
+    return response.SucessResponse(
+      res,
+      200,
+      message.todoFetched,
+      data,
+    );
+  } catch (error) {
+    console.log("Error =", error);
+
+    return response.errorResponse(
+      res,
+      500,
+      error.message,
+      null,
+    );
+  }
+};
 
 
 const todoList = async (req, res) => {
