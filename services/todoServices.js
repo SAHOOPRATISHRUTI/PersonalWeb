@@ -63,35 +63,93 @@ const todoList = async (userId) => {
   return await todoModel.find({ userId }).sort({ createdAt: -1 });
 };
 
-const todoListDate = async (userId, date) => {
-  const startDate = new Date(date);
 
-  const endDate = new Date(date);
-  endDate.setDate(endDate.getDate() + 1);
-  const user = await User.findById(userId);
+
+const todoListDate = async (userId, date, page, limit) => {
   if (!userId) {
     throw new Error("User not found");
   }
 
-  return await todoModel
-    .find({
-      userId,
-      isDeleted: false,
-      date: {
-        $gte: startDate,
-        $lt: endDate,
-      },
-    })
-    .sort({ scheduledTime: 1 });
+  const startDate = new Date(date);
+
+  const endDate = new Date(date);
+  endDate.setDate(endDate.getDate() + 1);
+
+  const query = {
+    userId,
+    isDeleted: false,
+    date: {
+      $gte: startDate,
+      $lt: endDate,
+    },
+  };
+
+  const skip = (page - 1) * limit;
+
+  const totalRecords = await todoModel.countDocuments(query);
+
+  const todoList = await todoModel
+    .find(query)
+    .sort({ scheduledTime: 1 })
+    .skip(skip)
+    .limit(limit);
+
+  const user = await User.findById(userId);
 
   await activitylogs.createActivity({
-    userId: userId,
+    userId,
     action: activityServicActions.DATE_TASK,
     module: "DAILY INFO",
     description: `${user.name} viewed todo for ${date}`,
   });
-  // return todoModel;
+
+  return {
+    todoList,
+    pagination: {
+      page,
+      limit,
+      totalRecords,
+      totalPages: Math.ceil(totalRecords / limit),
+      hasNextPage: page * limit < totalRecords,
+      hasPreviousPage: page > 1,
+    },
+  };
 };
+
+// const todoListDate = async (userId, date) => {
+//   const startDate = new Date(date);
+
+//   const endDate = new Date(date);
+//   endDate.setDate(endDate.getDate() + 1);
+//   const user = await User.findById(userId);
+//   if (!userId) {
+//     throw new Error("User not found");
+//   }
+
+//   return await todoModel
+//     .find({
+//       userId,
+//       isDeleted: false,
+//       date: {
+//         $gte: startDate,
+//         $lt: endDate,
+//       },
+//     })
+//     .sort({ scheduledTime: 1 });
+
+//   await activitylogs.createActivity({
+//     userId: userId,
+//     action: activityServicActions.DATE_TASK,
+//     module: "DAILY INFO",
+//     description: `${user.name} viewed todo for ${date}`,
+//   });
+//   // return todoModel;
+// };
+
+
+
+
+
 
 // const updateTodo = async (todoId, userId, updateData) => {
 //   const user = await User.findById(userId);
