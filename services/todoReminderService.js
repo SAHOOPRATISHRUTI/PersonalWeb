@@ -43,11 +43,11 @@ const checkDelayedTasks = async () => {
   const delayedTasks = [];
 
   for (const todo of todos) {
-    // console.log("\n====================================");
-    // console.log("Todo ID =", todo._id);
-    // console.log("Title =", todo.title);
-    // console.log("Date =", todo.date);
-    // console.log("Scheduled Time =", todo.scheduledTime);
+    console.log("\n====================================");
+    console.log("Todo ID =", todo._id);
+    console.log("Title =", todo.title);
+    console.log("Date =", todo.date);
+    console.log("Scheduled Time =", todo.scheduledTime);
 
     if (!todo.scheduledTime) {
       console.log("No scheduledTime found");
@@ -76,7 +76,7 @@ const checkDelayedTasks = async () => {
 
     const isDelayed = taskDateTime.getTime() <= now.getTime();
 
-    console.log("Is Delayed =", isDelayed);
+    // console.log("Is Delayed =", isDelayed);
 
     if (isDelayed && !todo.notificationSent) {
       console.log("Delayed Task Found");
@@ -102,13 +102,13 @@ const checkDelayedTasks = async () => {
           console.log("✅ Email Sent to:", user.email);
         } catch (err) {
           console.log("❌ Email Error:", err.message);
-          // console.log({
-          //   code: err.code,
-          //   command: err.command,
-          //   response: err.response,
-          //   responseCode: err.responseCode,
-          //   message: err.message,
-          // });
+          console.log({
+            code: err.code,
+            command: err.command,
+            response: err.response,
+            responseCode: err.responseCode,
+            message: err.message,
+          });
         }
       }
 
@@ -127,55 +127,76 @@ const checkDelayedTasks = async () => {
     }
   }
 
-  // console.log("\n====================================");
-  // console.log("Delayed Tasks =", delayedTasks);
-  // console.log("====================================");
+  console.log("\n====================================");
+  console.log("Delayed Tasks =", delayedTasks);
+  console.log("====================================");
 
   return delayedTasks;
 };
 const autoCreateDailyTodos = async () => {
   console.log("========== AUTO TODO STARTED ==========");
 
-  // Today's date (00:00)
-  const today = new Date();
+  // Current IST Date
+  const istNow = new Date(
+    new Date().toLocaleString("en-US", {
+      timeZone: "Asia/Kolkata",
+    }),
+  );
+
+  // Store today's IST date
+  const today = new Date(istNow);
   today.setHours(0, 0, 0, 0);
 
-  // Yesterday
-  const yesterday = new Date(today);
-  yesterday.setDate(today.getDate() - 1);
+  // Because Mongo stores UTC, shift to next UTC representation
+  today.setDate(today.getDate() + 1);
 
-  const yesterdayStart = new Date(yesterday);
-  yesterdayStart.setHours(0, 0, 0, 0);
+  const tomorrow = new Date(today);
+  tomorrow.setDate(today.getDate() + 1);
 
-  const yesterdayEnd = new Date(yesterday);
-  yesterdayEnd.setHours(23, 59, 59, 999);
+  console.log("Current IST :", istNow);
+  console.log("Today To Save :", today);
 
-  console.log("Today:", today);
-  console.log("Yesterday:", yesterdayStart);
-
-  const todos = await Todo.find({
-    isAutoAddEveryday: true,
-    isDeleted: false,
-    date: {
-      $gte: yesterdayStart,
-      $lte: yesterdayEnd,
+  const recurringTodos = await Todo.aggregate([
+    {
+      $match: {
+        isDeleted: false,
+        isAutoAddEveryday: true,
+      },
     },
-  });
+    {
+      $sort: {
+        date: -1,
+      },
+    },
+    {
+      $group: {
+        _id: {
+          userId: "$userId",
+          title: "$title",
+        },
+        todo: {
+          $first: "$$ROOT",
+        },
+      },
+    },
+  ]);
 
-  console.log("Todos Found:", todos.length);
+  console.log("Recurring Todos :", recurringTodos.length);
 
-  for (const todo of todos) {
-    console.log("Checking:", todo.title);
+  for (const item of recurringTodos) {
+    const todo = item.todo;
 
-    // Prevent duplicate creation
+    console.log("----------------------------------");
+    console.log("Checking :", todo.title);
+
     const alreadyExists = await Todo.findOne({
       userId: todo.userId,
       title: todo.title,
+      isDeleted: false,
       date: {
         $gte: today,
-        $lt: new Date(today.getTime() + 24 * 60 * 60 * 1000),
+        $lt: tomorrow,
       },
-      isDeleted: false,
     });
 
     if (alreadyExists) {
@@ -183,12 +204,13 @@ const autoCreateDailyTodos = async () => {
       continue;
     }
 
-    await Todo.create({
+    const createdTodo = await Todo.create({
       userId: todo.userId,
 
       title: todo.title,
       description: todo.description,
 
+      // Today's Date
       date: today,
 
       scheduledTime: todo.scheduledTime,
@@ -199,10 +221,12 @@ const autoCreateDailyTodos = async () => {
       priority: todo.priority,
 
       actualValue: 0,
+
       status: "PENDING",
+
       completedAt: null,
 
-      delayReason: null,
+      delayReason: "",
       delayReasonSubmittedAt: null,
 
       remarks: "",
@@ -221,7 +245,8 @@ const autoCreateDailyTodos = async () => {
       isAutoAddEveryday: true,
     });
 
-    console.log(`Created -> ${todo.title}`);
+    console.log("Created Successfully");
+    console.log(createdTodo);
   }
 
   console.log("========== AUTO TODO COMPLETED ==========");

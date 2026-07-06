@@ -58,16 +58,16 @@ const startDelayedTaskCron = () => {
   cron.schedule(
     "* * * * *",
     async () => {
-      console.log("=================================");
-      console.log("Running Delayed Task Cron...");
-      console.log(new Date());
+      // console.log("=================================");
+      // console.log("Running Delayed Task Cron...");
+      // console.log(new Date());
 
       try {
         const delayedTasks = await checkDelayedTasks();
 
-        console.log(
-          `Delayed Task Cron Completed. Tasks Found: ${delayedTasks.length}`,
-        );
+        // console.log(
+        //   `Delayed Task Cron Completed. Tasks Found: ${delayedTasks.length}`,
+        // );
       } catch (error) {
         console.error("Delayed Task Cron Error:", error.message);
       }
@@ -79,12 +79,12 @@ const startDelayedTaskCron = () => {
     },
   );
 
-  console.log("✅ Delayed Task Cron Started");
+  // console.log("✅ Delayed Task Cron Started");
 };
 
 const startAutoTodoCron = () => {
   cron.schedule(
-    "0 0 * * *",
+    "* * * * *",
     async () => {
       console.log("=================================");
       console.log("Running Auto Daily Todo Cron...");
