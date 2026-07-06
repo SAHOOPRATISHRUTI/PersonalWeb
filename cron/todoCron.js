@@ -56,7 +56,7 @@ const { autoCreateDailyTodos } = require("../services/todoReminderService");
 
 const startDelayedTaskCron = () => {
   cron.schedule(
-    "*/30 * * * *",
+    "* * * * *",
     async () => {
       console.log("=================================");
       console.log("Running Delayed Task Cron...");
