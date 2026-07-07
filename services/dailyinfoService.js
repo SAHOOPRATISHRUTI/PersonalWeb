@@ -46,7 +46,8 @@ const createDailyInfo = async (userId, dailyInfodata) => {
 
 const getDailyInfo = async (userId, date) => {
   const startDate = new Date(date);
-
+console.log("===============",date)
+console.log("===============",startDate)
   const endDate = new Date(date);
   endDate.setDate(endDate.getDate() + 1);
   if (!userId) {
