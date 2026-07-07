@@ -93,11 +93,7 @@ const checkDelayedTasks = async () => {
           console.log("title", todo.title);
           console.log("scheduledTime", todo.scheduledTime);
 
-          await emailService.sendDelayTaskEmail(
-            user.email,
-            todo.title,
-            todo.scheduledTime,
-          );
+          await emailService.sendDelayTaskEmail(user.email, user.name, todo);
 
           console.log("✅ Email Sent to:", user.email);
         } catch (err) {
@@ -189,6 +185,16 @@ const autoCreateDailyTodos = async () => {
     console.log("----------------------------------");
     console.log("Checking :", todo.title);
 
+    // Latest recurring task is already for today
+    const todoDate = new Date(todo.date);
+    todoDate.setHours(0, 0, 0, 0);
+
+    if (todoDate.getTime() === today.getTime()) {
+      console.log(`Latest Todo already belongs to today -> ${todo.title}`);
+      continue;
+    }
+
+    // Check if today's task already exists
     const alreadyExists = await Todo.findOne({
       userId: todo.userId,
       title: todo.title,
@@ -204,13 +210,14 @@ const autoCreateDailyTodos = async () => {
       continue;
     }
 
-    const createdTodo = await Todo.create({
+    console.log(`Creating today's task -> ${todo.title}`);
+
+    await Todo.create({
       userId: todo.userId,
 
       title: todo.title,
       description: todo.description,
 
-      // Today's Date
       date: today,
 
       scheduledTime: todo.scheduledTime,
@@ -221,7 +228,6 @@ const autoCreateDailyTodos = async () => {
       priority: todo.priority,
 
       actualValue: 0,
-
       status: "PENDING",
 
       completedAt: null,
@@ -245,8 +251,7 @@ const autoCreateDailyTodos = async () => {
       isAutoAddEveryday: true,
     });
 
-    console.log("Created Successfully");
-    console.log(createdTodo);
+    console.log(`Created -> ${todo.title}`);
   }
 
   console.log("========== AUTO TODO COMPLETED ==========");
