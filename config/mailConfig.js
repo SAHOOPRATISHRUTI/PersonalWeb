@@ -1,5 +1,23 @@
 const nodemailer = require("nodemailer");
 
+
+const dns = require("dns");
+
+
+dns.lookup("smtp.gmail.com", (err, address, family) => {
+  console.log("========== DNS TEST ==========");
+
+  if (err) {
+    console.log("DNS Error:", err);
+  } else {
+    console.log("SMTP Gmail IP:", address);
+    console.log("IP Family:", family);
+  }
+
+  console.log("==============================");
+});
+
+
 console.log("EMAIL_USER:", process.env.EMAIL_USER);
 console.log(
   "EMAIL_PASS:",
