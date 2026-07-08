@@ -22,15 +22,15 @@ const checkDelayedTasks = async () => {
   console.log("Total Todos In DB =", allTodos.length);
 
   allTodos.forEach((todo) => {
-    console.log({
-      id: todo._id,
-      title: todo.title,
-      status: todo.status,
-      isDeleted: todo.isDeleted,
-      notificationSent: todo.notificationSent,
-      scheduledTime: todo.scheduledTime,
-      date: todo.date,
-    });
+    // console.log({
+    //   id: todo._id,
+    //   title: todo.title,
+    //   status: todo.status,
+    //   isDeleted: todo.isDeleted,
+    //   notificationSent: todo.notificationSent,
+    //   scheduledTime: todo.scheduledTime,
+    //   date: todo.date,
+    // });
   });
 
   const todos = await Todo.find({
