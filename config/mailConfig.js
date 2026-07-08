@@ -18,6 +18,27 @@ dns.lookup("smtp.gmail.com", (err, address, family) => {
 });
 
 
+const net = require("net");
+
+const socket = net.connect(465, "smtp.gmail.com");
+
+socket.setTimeout(10000);
+
+socket.on("connect", () => {
+  console.log("✅ TCP Connected to Gmail SMTP");
+  socket.destroy();
+});
+
+socket.on("timeout", () => {
+  console.log("❌ TCP Timeout");
+  socket.destroy();
+});
+
+socket.on("error", (err) => {
+  console.log("❌ TCP Error:", err);
+});
+
+
 console.log("EMAIL_USER:", process.env.EMAIL_USER);
 console.log(
   "EMAIL_PASS:",
