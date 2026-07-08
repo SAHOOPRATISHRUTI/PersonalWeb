@@ -6,7 +6,7 @@ const transporter = require("../config/mailConfig");
 const checkDelayedTasks = async () => {
   const now = new Date();
 
-  console.log("====================================");
+  // console.log("====================================");
   console.log("UTC Time =", now);
 
   console.log(
@@ -15,22 +15,22 @@ const checkDelayedTasks = async () => {
       timeZone: "Asia/Kolkata",
     }),
   );
-  console.log("====================================");
+  // console.log("====================================");
 
   const allTodos = await Todo.find({});
 
   console.log("Total Todos In DB =", allTodos.length);
 
   allTodos.forEach((todo) => {
-    console.log({
-      id: todo._id,
-      title: todo.title,
-      status: todo.status,
-      isDeleted: todo.isDeleted,
-      notificationSent: todo.notificationSent,
-      scheduledTime: todo.scheduledTime,
-      date: todo.date,
-    });
+    // console.log({
+    //   id: todo._id,
+    //   title: todo.title,
+    //   status: todo.status,
+    //   isDeleted: todo.isDeleted,
+    //   notificationSent: todo.notificationSent,
+    //   scheduledTime: todo.scheduledTime,
+    //   date: todo.date,
+    // });
   });
 
   const todos = await Todo.find({
@@ -87,24 +87,61 @@ const checkDelayedTasks = async () => {
       const user = await User.findById(todo.userId);
 
       // Send Email
+      // Send Email
       if (user?.email) {
         try {
-          console.log("email", user.email);
-          console.log("title", todo.title);
-          console.log("scheduledTime", todo.scheduledTime);
+          console.log("\n================ EMAIL TRIGGER =================");
+          console.log("Trigger Time (UTC):", new Date().toISOString());
+          console.log(
+            "Trigger Time (IST):",
+            new Date().toLocaleString("en-IN", {
+              timeZone: "Asia/Kolkata",
+            }),
+          );
+
+          console.log("Todo ID:", todo._id);
+          console.log("User:", user.name);
+          console.log("Email:", user.email);
+          console.log("Title:", todo.title);
+          console.log("Scheduled Time:", todo.scheduledTime);
+
+          const start = Date.now();
 
           await emailService.sendDelayTaskEmail(user.email, user.name, todo);
 
-          console.log("✅ Email Sent to:", user.email);
+          const end = Date.now();
+
+          console.log("✅ Email Sent Successfully");
+          console.log("Completed At (UTC):", new Date().toISOString());
+          console.log(
+            "Completed At (IST):",
+            new Date().toLocaleString("en-IN", {
+              timeZone: "Asia/Kolkata",
+            }),
+          );
+          console.log(`Email Sending Time: ${end - start} ms`);
+          console.log("===============================================\n");
         } catch (err) {
-          console.log("❌ Email Error:", err.message);
-          console.log({
-            code: err.code,
-            command: err.command,
-            response: err.response,
-            responseCode: err.responseCode,
-            message: err.message,
-          });
+          console.log("\n================ EMAIL ERROR =================");
+          console.log("Failed At (UTC):", new Date().toISOString());
+          console.log(
+            "Failed At (IST):",
+            new Date().toLocaleString("en-IN", {
+              timeZone: "Asia/Kolkata",
+            }),
+          );
+
+          console.log("Todo ID:", todo._id);
+          console.log("Email:", user.email);
+
+          console.log("Message:", err.message);
+          console.log("Code:", err.code);
+          console.log("Command:", err.command);
+          console.log("Response:", err.response);
+          console.log("ResponseCode:", err.responseCode);
+          console.log("Stack:", err.stack);
+
+          console.log("==============================================\n");
         }
       }
 

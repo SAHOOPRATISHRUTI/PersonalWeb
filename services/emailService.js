@@ -49,6 +49,9 @@ const transporter = require("../config/mailConfig");
 console.log("Transporter =", transporter);
 
 const sendDelayTaskEmail = async (email, userName, todo) => {
+  console.log("➡️ sendDelayTaskEmail() called");
+  console.log("Time:", new Date().toISOString());
+  console.log("To:", email);
   const taskUrl = `${process.env.FRONTEND_URL}/dashboard`;
   const mailOptions = {
     from: process.env.EMAIL_USER,
@@ -155,7 +158,10 @@ const sendDelayTaskEmail = async (email, userName, todo) => {
     `,
   };
 
-  return transporter.sendMail(mailOptions);
+  const result = await transporter.sendMail(mailOptions);
+  console.log("📨 Message ID:", result.messageId);
+  console.log("Accepted:", result.accepted);
+  console.log("Rejected:", result.rejected);
 };
 
 module.exports = {
