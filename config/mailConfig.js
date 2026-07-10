@@ -1,49 +1,49 @@
 const nodemailer = require("nodemailer");
 
 
-const dns = require("dns");
+// const dns = require("dns");
 
 
-dns.lookup("smtp.gmail.com", (err, address, family) => {
-  console.log("========== DNS TEST ==========");
+// dns.lookup("smtp.gmail.com", (err, address, family) => {
+//   console.log("========== DNS TEST ==========");
 
-  if (err) {
-    console.log("DNS Error:", err);
-  } else {
-    console.log("SMTP Gmail IP:", address);
-    console.log("IP Family:", family);
-  }
+//   if (err) {
+//     console.log("DNS Error:", err);
+//   } else {
+//     console.log("SMTP Gmail IP:", address);
+//     console.log("IP Family:", family);
+//   }
 
-  console.log("==============================");
-});
-
-
-const net = require("net");
-
-const socket = net.connect(465, "smtp.gmail.com");
-
-socket.setTimeout(10000);
-
-socket.on("connect", () => {
-  console.log("✅ TCP Connected to Gmail SMTP");
-  socket.destroy();
-});
-
-socket.on("timeout", () => {
-  console.log("❌ TCP Timeout");
-  socket.destroy();
-});
-
-socket.on("error", (err) => {
-  console.log("❌ TCP Error:", err);
-});
+//   console.log("==============================");
+// });
 
 
-console.log("EMAIL_USER:", process.env.EMAIL_USER);
-console.log(
-  "EMAIL_PASS:",
-  process.env.EMAIL_PASS ? "Loaded" : "Missing"
-);
+// const net = require("net");
+
+// const socket = net.connect(465, "smtp.gmail.com");
+
+// socket.setTimeout(10000);
+
+// socket.on("connect", () => {
+//   console.log("✅ TCP Connected to Gmail SMTP");
+//   socket.destroy();
+// });
+
+// socket.on("timeout", () => {
+//   console.log("❌ TCP Timeout");
+//   socket.destroy();
+// });
+
+// socket.on("error", (err) => {
+//   console.log("❌ TCP Error:", err);
+// });
+
+
+// console.log("EMAIL_USER:", process.env.EMAIL_USER);
+// console.log(
+//   "EMAIL_PASS:",
+//   process.env.EMAIL_PASS ? "Loaded" : "Missing"
+// );
 
 const transporter = nodemailer.createTransport({
   host: "smtp.office365.com",
