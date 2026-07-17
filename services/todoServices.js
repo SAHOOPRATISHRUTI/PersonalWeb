@@ -195,34 +195,86 @@ const todoListDate = async (userId, date, page = 1, limit = 5) => {
 
 //   return todo;
 // };
+
+
+
+
 // const updateTodo = async (todoId, userId, updateData) => {
 //   const user = await User.findById(userId);
+
+//   const existingTodo = await todoModel.findOne({
+//     _id: todoId,
+//     userId,
+//     isDeleted: false,
+//   });
+
+//   if (!existingTodo) {
+//     throw new Error("Todo not found");
+//   }
 
 //   const updatePayload = {
 //     ...updateData,
 //     isEdited: true,
 //     editedAt: new Date(),
+
+//     isAutoAddEveryday:
+//       updateData.isAutoAddEveryday !== undefined
+//         ? updateData.isAutoAddEveryday
+//         : existingTodo.isAutoAddEveryday,
 //   };
 
-//   // Handle completed status
+//   // ===========================
+//   // If Date or Time Changed
+//   // ===========================
+//   if (updateData.date || updateData.scheduledTime) {
+//     const taskDate = new Date(updateData.date || existingTodo.date);
+
+//     const scheduledTime =
+//       updateData.scheduledTime || existingTodo.scheduledTime;
+
+//     if (scheduledTime) {
+//       const [hours, minutes] = scheduledTime.split(":").map(Number);
+
+//       taskDate.setHours(hours);
+//       taskDate.setMinutes(minutes);
+//       taskDate.setSeconds(0);
+//       taskDate.setMilliseconds(0);
+//     }
+
+//     const now = new Date();
+
+//     const isDelayed = taskDate <= now;
+
+//     updatePayload.isDelayed = isDelayed;
+//     updatePayload.notificationSent = isDelayed;
+
+//     // Reset delay reason only if task is no longer delayed
+//     if (!isDelayed) {
+//       updatePayload.delayReason = "";
+//       updatePayload.delayReasonSubmittedAt = null;
+//     }
+//   }
+
+//   // ===========================
+//   // Completed Status
+//   // ===========================
 //   if (updateData.status === "COMPLETED") {
 //     updatePayload.completedAt = new Date();
 //   } else if (updateData.status === "PENDING") {
 //     updatePayload.completedAt = null;
 //   }
 
-//   // Handle delay reason
-//   if (updateData.delayReason && updateData.delayReason.trim() !== "") {
-//     const reason = updateData.delayReason.trim();
+//   // ===========================
+//   // Delay Reason
+//   // ===========================
+//   if (updateData.delayReason?.trim()) {
+//     updatePayload.delayReason = updateData.delayReason.trim();
+//     updatePayload.isDelayed = true;
+//     updatePayload.notificationSent = true;
 
-//     updatePayload.delayReason = reason;
-
-//     // 🟢 ADD THIS (important)
-//     updatePayload.delayReasonSubmittedAt = new Date();
-
-//     // Reset delayed flags after reason is provided
-//     updatePayload.isDelayed = false;
-//     updatePayload.notificationSent = false;
+//     if (!existingTodo.delayReasonSubmittedAt) {
+//       updatePayload.delayReasonSubmittedAt = new Date();
+//     }
 //   }
 
 //   const todo = await todoModel.findOneAndUpdate(
@@ -272,7 +324,7 @@ const updateTodo = async (todoId, userId, updateData) => {
   };
 
   // ===========================
-  // If Date or Time Changed
+  // Date / Time Changed
   // ===========================
   if (updateData.date || updateData.scheduledTime) {
     const taskDate = new Date(updateData.date || existingTodo.date);
@@ -296,7 +348,6 @@ const updateTodo = async (todoId, userId, updateData) => {
     updatePayload.isDelayed = isDelayed;
     updatePayload.notificationSent = isDelayed;
 
-    // Reset delay reason only if task is no longer delayed
     if (!isDelayed) {
       updatePayload.delayReason = "";
       updatePayload.delayReasonSubmittedAt = null;
@@ -304,12 +355,47 @@ const updateTodo = async (todoId, userId, updateData) => {
   }
 
   // ===========================
-  // Completed Status
+  // Task Status
   // ===========================
+
+  // COMPLETED
   if (updateData.status === "COMPLETED") {
     updatePayload.completedAt = new Date();
-  } else if (updateData.status === "PENDING") {
+
+    updatePayload.cancelledAt = null;
+    updatePayload.cancelReason = "";
+
+    if (updateData.remarks !== undefined) {
+      updatePayload.remarks = updateData.remarks;
+    }
+  }
+
+  // PENDING
+  else if (updateData.status === "PENDING") {
     updatePayload.completedAt = null;
+
+    updatePayload.cancelledAt = null;
+    updatePayload.cancelReason = "";
+
+    if (updateData.remarks !== undefined) {
+      updatePayload.remarks = updateData.remarks;
+    }
+  }
+
+  // CANCELLED
+  else if (updateData.status === "CANCELLED") {
+    if (!updateData.cancelReason?.trim()) {
+      throw new Error("Cancellation reason is required");
+    }
+
+    updatePayload.cancelReason = updateData.cancelReason.trim();
+    updatePayload.cancelledAt = new Date();
+
+    updatePayload.completedAt = null;
+
+    if (updateData.remarks !== undefined) {
+      updatePayload.remarks = updateData.remarks;
+    }
   }
 
   // ===========================
@@ -317,6 +403,7 @@ const updateTodo = async (todoId, userId, updateData) => {
   // ===========================
   if (updateData.delayReason?.trim()) {
     updatePayload.delayReason = updateData.delayReason.trim();
+
     updatePayload.isDelayed = true;
     updatePayload.notificationSent = true;
 
@@ -334,14 +421,32 @@ const updateTodo = async (todoId, userId, updateData) => {
     updatePayload,
     {
       new: true,
-    },
+    }
   );
+
+  // ===========================
+  // Activity Log
+  // ===========================
+
+  let activityDescription = `${user.email} updated a todo task`;
+
+  if (updateData.status === "COMPLETED") {
+    activityDescription = `${user.email} completed a todo task`;
+  }
+
+  if (updateData.status === "CANCELLED") {
+    activityDescription = `${user.email} cancelled a todo task`;
+  }
+
+  if (updateData.status === "PENDING") {
+    activityDescription = `${user.email} marked a todo as pending`;
+  }
 
   await activitylogs.createActivity({
     userId,
     action: activityServicActions.UPDATE_TASK,
     module: "TODO",
-    description: `${user.email} updated a todo task`,
+    description: activityDescription,
   });
 
   return todo;
