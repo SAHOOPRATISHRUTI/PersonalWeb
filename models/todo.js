@@ -49,7 +49,7 @@ const todoSchema = new mongoose.Schema({
   },
   status: {
     type: String,
-    enum: ["PENDING", "COMPLETED"],
+    enum: ["PENDING", "COMPLETED","CANCELLED"],
     default: "PENDING",
   },
   completedAt: {
@@ -105,6 +105,11 @@ const todoSchema = new mongoose.Schema({
     type: Boolean,
     default: false,
   },
+  cancelReason: {
+  type: String,
+  default: "",
+},
+cancelledAt: Date,
 },{
   timestamps:true
 });
