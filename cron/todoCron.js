@@ -34,14 +34,14 @@ const startAutoTodoCron = () => {
   cron.schedule(
     "* * * * *",
     async () => {
-      console.log("=================================");
-      console.log("Running Auto Daily Todo Cron...");
-      console.log(new Date());
+      // console.log("=================================");
+      // console.log("Running Auto Daily Todo Cron...");
+      // console.log(new Date());
 
       try {
         await autoCreateDailyTodos();
 
-        console.log("✅ Auto Daily Todo Completed");
+        // console.log("✅ Auto Daily Todo Completed");
       } catch (error) {
         console.error("Auto Daily Todo Cron Error:", error.message);
       }
