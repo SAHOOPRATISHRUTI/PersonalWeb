@@ -7,19 +7,19 @@ const checkDelayedTasks = async () => {
   const now = new Date();
 
   // console.log("====================================");
-  console.log("UTC Time =", now);
+  // console.log("UTC Time =", now);
 
-  console.log(
-    "IST Time =",
-    now.toLocaleString("en-IN", {
-      timeZone: "Asia/Kolkata",
-    }),
-  );
+  // console.log(
+  //   "IST Time =",
+  //   now.toLocaleString("en-IN", {
+  //     timeZone: "Asia/Kolkata",
+  //   }),
+  // );
   // console.log("====================================");
 
   const allTodos = await Todo.find({});
 
-  console.log("Total Todos In DB =", allTodos.length);
+  // console.log("Total Todos In DB =", allTodos.length);
 
   allTodos.forEach((todo) => {
     // console.log({
@@ -38,16 +38,16 @@ const checkDelayedTasks = async () => {
     isDeleted: false,
   });
 
-  console.log("Pending Todos Found =", todos.length);
+  // console.log("Pending Todos Found =", todos.length);
 
   const delayedTasks = [];
 
   for (const todo of todos) {
-    console.log("\n====================================");
-    console.log("Todo ID =", todo._id);
-    console.log("Title =", todo.title);
-    console.log("Date =", todo.date);
-    console.log("Scheduled Time =", todo.scheduledTime);
+    // console.log("\n====================================");
+    // console.log("Todo ID =", todo._id);
+    // console.log("Title =", todo.title);
+    // console.log("Date =", todo.date);
+    // console.log("Scheduled Time =", todo.scheduledTime);
 
     if (!todo.scheduledTime) {
       console.log("No scheduledTime found");
@@ -63,16 +63,16 @@ const checkDelayedTasks = async () => {
     taskDateTime.setSeconds(0);
     taskDateTime.setMilliseconds(0);
 
-    console.log("Task DateTime =", taskDateTime);
+    // console.log("Task DateTime =", taskDateTime);
 
-    console.log(
-      "Task DateTime IST =",
-      taskDateTime.toLocaleString("en-IN", {
-        timeZone: "Asia/Kolkata",
-      }),
-    );
+    // console.log(
+    //   "Task DateTime IST =",
+    //   taskDateTime.toLocaleString("en-IN", {
+    //     timeZone: "Asia/Kolkata",
+    //   }),
+    // );
 
-    console.log("Current DateTime =", now);
+    // console.log("Current DateTime =", now);
 
     const isDelayed = taskDateTime.getTime() <= now.getTime();
 
@@ -186,8 +186,8 @@ const autoCreateDailyTodos = async () => {
   const tomorrow = new Date(today);
   tomorrow.setDate(today.getDate() + 1);
 
-  console.log("Current IST :", istNow);
-  console.log("Today To Save :", today);
+  // console.log("Current IST :", istNow);
+  // console.log("Today To Save :", today);
 
   const recurringTodos = await Todo.aggregate([
     {
@@ -214,13 +214,13 @@ const autoCreateDailyTodos = async () => {
     },
   ]);
 
-  console.log("Recurring Todos :", recurringTodos.length);
+  // console.log("Recurring Todos :", recurringTodos.length);
 
   for (const item of recurringTodos) {
     const todo = item.todo;
 
-    console.log("----------------------------------");
-    console.log("Checking :", todo.title);
+    // console.log("----------------------------------");
+    // console.log("Checking :", todo.title);
 
     // Latest recurring task is already for today
     const todoDate = new Date(todo.date);
@@ -247,7 +247,7 @@ const autoCreateDailyTodos = async () => {
       continue;
     }
 
-    console.log(`Creating today's task -> ${todo.title}`);
+    // console.log(`Creating today's task -> ${todo.title}`);
 
     await Todo.create({
       userId: todo.userId,
@@ -288,10 +288,10 @@ const autoCreateDailyTodos = async () => {
       isAutoAddEveryday: true,
     });
 
-    console.log(`Created -> ${todo.title}`);
+    // console.log(`Created -> ${todo.title}`);
   }
 
-  console.log("========== AUTO TODO COMPLETED ==========");
+  // console.log("========== AUTO TODO COMPLETED ==========");
 };
 
 module.exports = {

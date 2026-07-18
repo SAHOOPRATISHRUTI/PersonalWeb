@@ -54,7 +54,8 @@ const todoListDate = async (req, res) => {
     const {
       date,
       page = 1,
-      limit = 10, // default if frontend doesn't send
+      limit = 10, 
+      search,
     } = req.query;
 
     const data = await todoService.todoListDate(
@@ -62,6 +63,8 @@ const todoListDate = async (req, res) => {
       date,
       Number(page),
       Number(limit),
+      search 
+
     );
 
     return response.SucessResponse(

@@ -63,7 +63,7 @@ const todoList = async (userId) => {
   return await todoModel.find({ userId }).sort({ createdAt: -1 });
 };
 
-const todoListDate = async (userId, date, page = 1, limit = 5) => {
+const todoListDate = async (userId, date, page = 1, limit = 5,search = "") => {
   if (!userId) {
     throw new Error("User not found");
   }
@@ -83,6 +83,19 @@ const todoListDate = async (userId, date, page = 1, limit = 5) => {
     },
   };
 
+if (search && search.trim() !== "") {
+    query.$or = [
+      { title: { $regex: search, $options: "i" } },
+      { description: { $regex: search, $options: "i" } },
+      { cancelReason: { $regex: search, $options: "i" } },
+      { remarks: { $regex: search, $options: "i" } },
+      { taskType: { $regex: search, $options: "i" } },
+      { priority: { $regex: search, $options: "i" } },
+      { status: { $regex: search, $options: "i" } },
+      { scheduledTime: { $regex: search, $options: "i" } },
+      { unit: { $regex: search, $options: "i" } },
+    ];
+  }
   // Fetch all todos for that date
   const todos = await todoModel.find(query);
 
@@ -112,7 +125,7 @@ const todoListDate = async (userId, date, page = 1, limit = 5) => {
       userId,
       action: activityServicActions.DATE_TASK,
       module: "DAILY INFO",
-      description: `${user.name} viewed todo for ${date}`,
+     description: `${user.name} searched "${search}" for ${date}`,
     });
   }
 

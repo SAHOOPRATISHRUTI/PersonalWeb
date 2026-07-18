@@ -46,8 +46,8 @@ const nodemailer = require("nodemailer");
 // );
 
 const transporter = nodemailer.createTransport({
-  host: "smtp.office365.com",
-  // host: "smtp.gmail.com",
+  // host: "smtp.office365.com",
+  host: "smtp.gmail.com",
   port: 465,
   secure: true,
   auth: {
@@ -68,11 +68,11 @@ const transporter = nodemailer.createTransport({
 
     console.log("✅ SMTP Connected");
   } catch (err) {
-    console.log("❌ SMTP Error");
-    console.log("Message:", err.message);
-    console.log("Code:", err.code);
-    console.log("Command:", err.command);
-    console.log("Stack:", err.stack);
+    // console.log("❌ SMTP Error");
+    // console.log("Message:", err.message);
+    // console.log("Code:", err.code);
+    // console.log("Command:", err.command);
+    // console.log("Stack:", err.stack);
   }
 })();
 
