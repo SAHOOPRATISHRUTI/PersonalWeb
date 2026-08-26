@@ -728,6 +728,61 @@ const getDashboard = async (
     completionRate,
   };
 };
+const checkDelayedTaskss = async (userId, date) => {
+  try {
+    console.log("Checking delayed tasks");
+    console.log("User ID:", userId);
+    console.log("Date:", date);
+
+    // Current time in HH:mm format
+    const currentTime = new Date()
+      .toTimeString()
+      .slice(0, 5);
+
+    console.log("Current Time:", currentTime);
+
+
+    const delayedTasks = await todoModel.find({
+      userId: userId,
+
+      date: date,
+
+      status: "PENDING",
+
+      isDeleted: false,
+
+      // Task time already crossed
+      scheduledTime: {
+        $lt: currentTime
+      }
+    })
+    .sort({
+      scheduledTime: 1
+    })
+    .lean();
+
+
+    console.log(
+      "Delayed Tasks Found:",
+      delayedTasks.length
+    );
+
+    console.log(delayedTasks);
+
+
+    return delayedTasks;
+
+
+  } catch(error) {
+
+    console.error("Delayed Task Error:", error);
+
+    throw error;
+
+  }
+};
+
+
 
 module.exports = {
   createTodo,
@@ -737,4 +792,5 @@ module.exports = {
   todoList,
   todoCountByDate,
   getDashboard,
+  checkDelayedTaskss
 };
